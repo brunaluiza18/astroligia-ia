@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from skyfield.api import Loader
 from skyfield import almanac
+from skyfield.almanac import find_discrete, moon_phases
 
 SP = timezone(timedelta(hours=-3))  # horário de Brasília
 
@@ -18,8 +19,11 @@ CORPOS = {
     "Netuno": "neptune barycenter", "Plutão": "pluto barycenter",
 }
 
-FASES = ["Lua Nova", "Lua Crescente", "Quarto Crescente", "Gibosa Crescente",
-         "Lua Cheia", "Gibosa Minguante", "Quarto Minguante", "Lua Minguante"]
+# Fases principais: só valem no dia em que o momento exato acontece
+FASES_PRINCIPAIS = ["Lua Nova", "Quarto Crescente", "Lua Cheia", "Quarto Minguante"]
+# Fases intermediárias: valem nos dias entre as principais
+FASES_INTERMEDIARIAS = ["Lua Crescente", "Gibosa Crescente",
+                        "Gibosa Minguante", "Lua Minguante"]
 
 
 def longitude(corpo, t):
@@ -44,8 +48,20 @@ def posicoes(dt):
 
 
 def fase_da_lua(dt):
-    angulo = almanac.moon_phase(eph, ts.from_datetime(dt)).degrees
-    return FASES[int(((angulo + 22.5) % 360) // 45)]
+    # início e fim do dia local
+    inicio = dt.replace(hour=0, minute=0, second=0, microsecond=0)
+    fim = inicio + timedelta(days=1)
+
+    # alguma fase principal acontece neste dia?
+    t0, t1 = ts.from_datetime(inicio), ts.from_datetime(fim)
+    tempos, eventos = find_discrete(t0, t1, moon_phases(eph))
+    if len(eventos) > 0:
+        return FASES_PRINCIPAIS[int(eventos[0])]
+
+    # senão, usa a fase intermediária do meio-dia
+    meio_dia = inicio + timedelta(hours=12)
+    angulo = almanac.moon_phase(eph, ts.from_datetime(meio_dia)).degrees
+    return FASES_INTERMEDIARIAS[int(angulo // 90) % 4]
 
 
 if __name__ == "__main__":
