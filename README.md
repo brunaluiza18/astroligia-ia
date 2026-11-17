@@ -1,6 +1,6 @@
 # Astro Pipeline
 
-Pipeline em Python para produzir conteúdo curto de **astrologia humanística**: o céu real do dia vira gráfico e, em breve, roteiro, narração e vídeo vertical (9:16).
+Pipeline em Python que utiliza efemérides astronômicas da NASA/JPL para calcular posições planetárias, detectar retrogradações, determinar fases da Lua e gerar visualizações automáticas.
 
 > Projeto em andamento. Feito para o público que está começando na astrologia, com foco em **ciclos de evolução e livre-arbítrio**, nunca em previsões fatalistas.
 
